@@ -1,0 +1,83 @@
+/* 기본 설정 */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f7fa;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 28px;
+  color: #222;
+}
+
+h3 {
+  margin: 10px 0;
+  font-weight: 600;
+  font-size: 18px;
+  color: #222;
+}
+
+p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #444;
+}
+
+/* 그리드 레이아웃 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  padding: 0 20px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 카드 스타일 */
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+/* 상태 뱃지 */
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.badge-scheduled {
+  background-color: #3498db;
+}
+
+.badge-live {
+  background-color: #54ad39;
+}
+
+.badge-ended {
+  background-color: #000000;
+}
+
+.badge-canceled {
+  background-color: #4a4a4a;
+}
+
