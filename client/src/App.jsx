@@ -203,7 +203,7 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
   // 탭별 섹션 렌더링
   const renderTabContent = () => {
     if (activeTab === 'home') {
-      return (
+  return (
         <div className="main-2col">
           <div className="main-2col-left">
             <div className="filter-tabs">
@@ -216,7 +216,7 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
                 >{f}</button>
               ))}
             </div>
-            <div>
+    <div>
               {filteredGames.length === 0 ? (
                 <p>경기 데이터가 없습니다.</p>
               ) : (
