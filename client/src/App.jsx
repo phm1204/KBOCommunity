@@ -9,6 +9,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import axios from 'axios';
 import Header from './components/Header';
 import TEAM_COLORS from './utils/teamColors';
+import AuthModal from './components/AuthModal';
 
 const TEAM_LIST = [
   '', '두산', 'LG', 'SSG', 'NC', '키움', 'KIA', '롯데', '삼성', '한화', 'KT'
@@ -102,7 +103,7 @@ function CommunityCard({ room, onJoin }) {
   );
 }
 
-function ChatModal({ open, onClose, title }) {
+function ChatModal({ open, onClose, title, username, socket }) {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
     { user: 'user1', text: '안녕하세요!' },
@@ -129,7 +130,8 @@ function ChatModal({ open, onClose, title }) {
 
 function MainApp({ username, setUsername, myteam, setMyteam }) {
   const [games, setGames] = useState([]);
-  const socket = io("http://localhost:5000");
+  const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'http://' + window.location.hostname + ':5000';
+  const socket = io(SERVER_URL);
   const [showAuthModal, setShowAuthModal] = useState(!username);
   const [authTab, setAuthTab] = useState('login');
   const [showMyPage, setShowMyPage] = useState(false);
@@ -141,24 +143,32 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
   const color = TEAM_COLORS[myteam] || '#888';
 
   useEffect(() => {
-    fetch("http://localhost:5000/games")
+    fetch(`${SERVER_URL}/games`)
       .then(res => res.json())
       .then(data => setGames(data));
     socket.on("updateGames", (data) => {
       setGames(data);
     });
-    return () => socket.disconnect();
   }, []);
 
   const handleLoginSuccess = (user) => {
+    console.log('Login success handler:', user);
     setShowAuthModal(false);
-    if (user && user.username) setUsername(user.username);
-    if (user && user.myteam !== undefined) setMyteam(user.myteam);
+    if (user && user.username) {
+      setUsername(user.username);
+      localStorage.setItem('username', user.username);
+    }
+    if (user && user.myteam !== undefined) {
+      setMyteam(user.myteam);
+      localStorage.setItem('myteam', user.myteam);
+    }
   };
 
-  const handleJoinChat = (gameOrRoom) => {
-    setChatTitle(gameOrRoom.title || `${gameOrRoom.away_team} vs ${gameOrRoom.home_team} 채팅방`);
+  const handleJoinChat = (game, roomId) => {
+    setChatTitle(`${game.away_team} vs ${game.home_team} (${game.time})`);
     setShowChat(true);
+    // Join the specific chat room
+    socket.emit('joinRoom', { username, room: roomId });
   };
 
   // 필터링된 게임 리스트
@@ -256,7 +266,7 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
               >{f}</button>
             ))}
           </div>
-          <CommunityCard room={communityRooms[0]} onJoin={()=>handleJoinChat(communityRooms[0])} />
+          <CommunityCard room={communityRooms[0]} onJoin={()=>handleJoinChat(communityRooms[0], 'community')} />
         </div>
       );
     }
@@ -272,53 +282,59 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
   };
 
   if (!username) {
-  return (
-    <div>
-        {showAuthModal && (
-          <div className="modal-overlay">
-            <div className="auth-modal">
-              <div className="auth-tabs">
-                <button className={authTab === 'login' ? 'active' : ''} onClick={() => setAuthTab('login')}>로그인</button>
-                <button className={authTab === 'register' ? 'active' : ''} onClick={() => setAuthTab('register')}>회원가입</button>
-                <button className="close-btn" style={{visibility:'hidden'}}>&times;</button>
-              </div>
-              <div className="auth-content">
-                {authTab === 'login' ? (
-                  <Login 
-                    onLoginSuccess={handleLoginSuccess}
-                    onRegister={() => setAuthTab('register')}
-                  />
-                ) : (
-                  <Register 
-                    onRegisterSuccess={handleLoginSuccess}
-                    onLogin={() => setAuthTab('login')}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+    return (
+      <div style={{ position: 'relative', minHeight: '100vh', background: '#f4f4f9' }}>
+        <AuthModal 
+          show={showAuthModal} 
+          onClose={() => setShowAuthModal(false)}
+          onLoginSuccess={handleLoginSuccess}
+          activeTab={authTab}
+          onTabChange={setAuthTab}
+        />
       </div>
     );
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', background: color ? color + '11' : '#f4f4f9' }}>
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} onMyPage={() => setShowMyPage(true)} myteam={myteam} />
+    <div className="app-container">
+      <Header
+        username={username}
+        myteam={myteam}
+        onMyPageClick={() => setShowMyPage(true)}
+        onTabChange={setActiveTab}
+        activeTab={activeTab}
+        color={color}
+      />
       {showMyPage ? (
-        <div className="modal-overlay" style={{zIndex:1500}}>
-          <div className="mypage-modal">
-            <MyPage username={username} myteam={myteam} setMyteam={setMyteam} onBack={() => setShowMyPage(false)} setUsername={setUsername} setShowAuthModal={setShowAuthModal} />
-          </div>
-        </div>
+        <MyPage
+          username={username}
+          myteam={myteam}
+          setMyteam={setMyteam}
+          onBack={() => setShowMyPage(false)}
+          setUsername={setUsername}
+          setShowAuthModal={setShowAuthModal}
+        />
       ) : (
-        <>
-          <div className="main-content-container">
-            {renderTabContent()}
-          </div>
-        </>
+        renderTabContent()
       )}
-      <ChatModal open={showChat} onClose={()=>setShowChat(false)} title={chatTitle} />
+      {showAuthModal && (
+        <AuthModal
+          open={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onLoginSuccess={handleLoginSuccess}
+          activeTab={authTab}
+          onTabChange={setAuthTab}
+        />
+      )}
+      {showChat && (
+        <ChatModal
+          open={showChat}
+          onClose={() => setShowChat(false)}
+          title={chatTitle}
+          username={username}
+          socket={socket}
+        />
+      )}
     </div>
   );
 }

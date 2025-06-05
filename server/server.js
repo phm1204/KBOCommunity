@@ -11,13 +11,58 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "http://localhost:5173", methods: ["GET"] }
+  cors: { 
+    origin: "*",  // 모든 도메인에서의 접근 허용
+    methods: ["GET", "POST"] 
+  }
 });
 
-app.use(cors());
+app.use(cors({
+  origin: "*",  // 모든 도메인에서의 접근 허용
+  methods: ["GET", "POST", "PATCH", "DELETE"]
+}));
 app.use(express.json());
 
 let latestData = [];
+
+// 사용자 정보를 저장할 객체 (예: socket.id -> { username: '...' })
+const users = {};
+
+io.on('connection', (socket) => {
+  console.log(`⚡: ${socket.id} user just connected!`);
+
+  // 클라이언트가 방에 참여할 때
+  socket.on('joinRoom', ({ username, room }) => {
+    socket.join(room);
+    users[socket.id] = { username }; // 사용자 정보 저장
+    console.log(`${username} joined room: ${room}`);
+    // 방에 있는 모든 사용자에게 알림 (선택 사항)
+    io.to(room).emit('receiveMessage', { user: 'System', text: `${username}님이 입장하셨습니다.` });
+  });
+
+  // 클라이언트가 메시지를 보낼 때
+  socket.on('sendMessage', ({ room, text }) => {
+    const user = users[socket.id];
+    if (user) {
+      console.log(`Message from ${user.username} in ${room}: ${text}`);
+      // 메시지를 보낸 클라이언트를 포함하여 방에 있는 모든 클라이언트에게 메시지 전송
+      io.to(room).emit('receiveMessage', { user: user.username, text: text });
+    }
+  });
+
+  // 클라이언트 연결 해제 시
+  socket.on('disconnect', () => {
+    const user = users[socket.id];
+    if (user) {
+      console.log(`💔: ${user.username} disconnected`);
+      // 사용자가 어떤 방에 있었는지 찾아서 퇴장 알림 (필요시 구현)
+      // 현재는 간단히 콘솔에만 표시
+      delete users[socket.id]; // 사용자 정보 삭제
+    } else {
+       console.log(`💔: ${socket.id} disconnected`);
+    }
+  });
+});
 
 const fetchGamesFromPython = () => {
   return new Promise((resolve, reject) => {
@@ -114,7 +159,12 @@ app.post('/login', (req, res) => {
       if (!isMatch) return res.status(401).json({ message: '비밀번호 불일치' });
 
       const token = jwt.sign({ id: user.id, username: user.username }, 'jwt_secret_key', { expiresIn: '1h' });
-      res.json({ message: '로그인 성공', token, myteam: user.myteam || null });
+      res.json({ 
+        message: '로그인 성공', 
+        token, 
+        username: user.username,
+        myteam: user.myteam || null 
+      });
     }
   );
 });

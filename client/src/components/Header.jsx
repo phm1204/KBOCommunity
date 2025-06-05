@@ -4,7 +4,6 @@ import '../App.css';
 
 const NAV_TABS = [
   { id: 'home', label: '홈' },
-  { id: 'community', label: '커뮤니티' },
 ];
 
 function Header({ activeTab, setActiveTab, onMyPage, myteam }) {

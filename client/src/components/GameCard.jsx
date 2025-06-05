@@ -31,16 +31,18 @@ const getStatusBadge = (status) => {
 };
 
 const getButton = (game, onJoinChat) => {
+  const roomId = `${game.away_team}_${game.home_team}_${game.time.replace(':', '')}`;
+  
   if (game.status?.includes('진행')) {
-    return <button className="btn btn-primary" onClick={() => onJoinChat && onJoinChat(game)}>LIVE 커뮤니티</button>;
+    return <button className="btn btn-primary" onClick={() => onJoinChat && onJoinChat(game, roomId)}>LIVE 커뮤니티</button>;
   }
   if (game.status?.includes('예정') || game.status?.includes('대기')) {
-    return <button className="btn btn-scheduled" disabled>커뮤니티 오픈 예정</button>;
+    return <button className="btn btn-scheduled" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티 입장</button>;
   }
   if (game.status?.includes('종료')) {
-    return <button className="btn btn-ended" disabled>커뮤니티 활성화 중</button>;
+    return <button className="btn btn-ended" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티 입장</button>;
   }
-  return <button className="btn btn-scheduled" disabled>커뮤니티 오픈 예정</button>;
+  return <button className="btn btn-scheduled" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티 입장</button>;
 };
 
 // 경기 카드 컴포넌트
@@ -98,33 +100,25 @@ const GameCard = ({ game, onJoinChat }) => {
           background:'#fff',
           borderRadius: 0,
           margin: 0,
-          padding:'18px 0 12px 0',
+          padding:'18px 28px 12px 28px',
           borderTop: 'none',
           display:'flex',
-          justifyContent:'center',
-          alignItems:'center',
-          boxShadow:'none',
+          justifyContent:'space-between',
+          alignItems:'flex-start',
+          width:'100%',
+          fontSize:'1rem',
+          fontWeight:500
         }}>
-          <div style={{
-            display:'flex',
-            alignItems:'center',
-            justifyContent:'center',
-            gap:32,
-            width:'100%',
-            maxWidth:480,
-            margin:'0 auto',
-            fontSize:'1.08rem',
-            fontWeight:500
-          }}>
-            <span style={{display:'flex',alignItems:'center',gap:8}}>
-              <span style={{fontWeight:600}}>{game.away_team}</span>
-              <span style={{fontSize:'1.08rem',color:'#e74c3c'}}>{hideFirstChar(game.away_pitcher)}</span>
-            </span>
-            <span style={{fontWeight:700, color:'#888', fontSize:'1.05rem'}}>vs</span>
-            <span style={{display:'flex',alignItems:'center',gap:8}}>
-              <span style={{fontWeight:600}}>{game.home_team}</span>
-              <span style={{fontSize:'1.08rem',color:'#3498db'}}>{hideFirstChar(game.home_pitcher)}</span>
-            </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingLeft: '86px', flex: 1 }}>
+            <span style={{fontWeight:600, marginBottom: 4}}>{game.away_team}</span>
+            <span style={{fontSize:'0.95rem',color:'#e74c3c'}}>{hideFirstChar(game.away_pitcher)}</span>
+          </div>
+
+          <span style={{fontWeight:700, color:'#888', fontSize:'1.05rem', alignSelf:'center'}}>vs</span>
+
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', paddingRight: '86px', flex: 1 }}>
+            <span style={{fontWeight:600, marginBottom: 4}}>{game.home_team}</span>
+            <span style={{fontSize:'0.95rem',color:'#3498db'}}>{hideFirstChar(game.home_pitcher)}</span>
           </div>
         </div>
       )}
