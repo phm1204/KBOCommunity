@@ -9,6 +9,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import axios from 'axios';
 import TEAM_COLORS from './utils/teamColors';
 import AuthModal from './components/AuthModal';
+import RankingsPage from './pages/RankingsPage';
 
 const TEAM_LIST = [
   '', '두산', 'LG', 'SSG', 'NC', '키움', 'KIA', '롯데', '삼성', '한화', 'KT'
@@ -21,6 +22,8 @@ const TABS = [
   { id: 'team', label: '팀 순위' },
   { id: 'community', label: '게임 커뮤니티' },
 ];
+
+const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'http://' + window.location.hostname + ':5000';
 
 function MyPage({ username, myteam, setMyteam, onBack, setUsername, setShowAuthModal }) {
   const [selected, setSelected] = useState(myteam || '');
@@ -128,7 +131,6 @@ function ChatModal({ open, onClose, title, username, socket }) {
 function MainApp({ username, setUsername, myteam, setMyteam }) {
   const [games, setGames] = useState([]);
   const [teamRankings, setTeamRankings] = useState([]);
-  const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'http://' + window.location.hostname + ':5000';
   const socket = io(SERVER_URL);
   const [showAuthModal, setShowAuthModal] = useState(!username);
   const [authTab, setAuthTab] = useState('login');
@@ -148,7 +150,9 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
       .then(data => setGames(data));
     fetch(`${SERVER_URL}/team-rankings`)
       .then(res => res.json())
-      .then(data => setTeamRankings(data));
+      .then(data => setTeamRankings(data))
+      .catch(error => console.error('Error fetching team rankings:', error));
+    
     socket.on("updateGames", (data) => {
       setGames(data);
     });
@@ -374,9 +378,9 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
           setShowAuthModal={setShowAuthModal}
         />
       ) : (
-        <div className="main-content-container">
+        <main className="main-content-container">
           {renderTabContent()}
-        </div>
+        </main>
       )}
       {showChat && (
         <ChatModal
@@ -391,18 +395,17 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
   );
 }
 
-export default function App() {
+function App() {
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
   const [myteam, setMyteam] = useState(localStorage.getItem('myteam') || '');
 
   return (
     <Router>
-      <MainApp
-        username={username}
-        setUsername={setUsername}
-        myteam={myteam}
-        setMyteam={setMyteam}
-      />
+      <Routes>
+        <Route path="/" element={<MainApp username={username} setUsername={setUsername} myteam={myteam} setMyteam={setMyteam} />} />
+      </Routes>
     </Router>
   );
 }
+
+export default App;

@@ -55,8 +55,11 @@ const GameCard = ({ game, onJoinChat, showLineup = true, id, isOpen, setOpenGame
     }
   };
 
-  // 선발투수 이름 첫 글자 제거 함수
-  const hideFirstChar = (name) => (name && name.length > 1 ? name.slice(1) : name || '-');
+  // 선발투수 이름 표시 함수
+  const getPitcherName = (name) => {
+    if (!name) return '-';
+    return name;
+  };
 
   return (
     <div style={{
@@ -88,12 +91,17 @@ const GameCard = ({ game, onJoinChat, showLineup = true, id, isOpen, setOpenGame
           width: '42px',
           height: '42px',
           fontSize: '1.15rem',
-          marginRight: '10px' // 팀 이름과 로고 사이 간격 조정
+          marginRight: '10px'
         }}>
           {game.away_team[0]}
         </div>
         <div style={{flex:1, textAlign:'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: '0 10px'}}>
-          <div className="game-time" style={{ fontSize: '1rem', marginBottom: '4px' }}>{game.time} | {game.stadium}</div>
+          <div className="game-time" style={{ fontSize: '1rem', marginBottom: '4px' }}>
+            {game.time} | {game.stadium}
+            {game.staus && (
+              <span style={{ marginLeft: '8px', color: '#666', fontWeight: '500' }}>{game.staus}</span>
+            )}
+          </div>
           <div className="game-score" style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#333' }}>
             {game.away_score !== 'N/A' ? `${game.away_score} : ${game.home_score}` : '-'}
           </div>
@@ -105,7 +113,7 @@ const GameCard = ({ game, onJoinChat, showLineup = true, id, isOpen, setOpenGame
           width: '42px',
           height: '42px',
           fontSize: '1.15rem',
-          marginLeft: '10px' // 팀 이름과 로고 사이 간격 조정
+          marginLeft: '10px'
         }}>
           {game.home_team[0]}
         </div>
@@ -113,7 +121,7 @@ const GameCard = ({ game, onJoinChat, showLineup = true, id, isOpen, setOpenGame
           {game.home_team}
         </div>
         <div style={{marginLeft:16}} onClick={e => e.stopPropagation()}>
-          {getButton(game, onJoinChat)}
+          {getStatusBadge(getGameStatus(game))}
         </div>
       </div>
       {isOpen && showLineup && (
@@ -132,14 +140,14 @@ const GameCard = ({ game, onJoinChat, showLineup = true, id, isOpen, setOpenGame
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingLeft: '86px', flex: 1 }}>
             <span style={{fontWeight:600, marginBottom: 4}}>{game.away_team}</span>
-            <span style={{fontSize:'0.95rem',color:'#e74c3c'}}>{hideFirstChar(game.away_pitcher)}</span>
+            <span style={{fontSize:'0.95rem',color:'#e74c3c'}}>{getPitcherName(game.away_pitcher)}</span>
           </div>
 
           <span style={{fontWeight:700, color:'#888', fontSize:'1.05rem', alignSelf:'center'}}>vs</span>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', paddingRight: '86px', flex: 1 }}>
             <span style={{fontWeight:600, marginBottom: 4}}>{game.home_team}</span>
-            <span style={{fontSize:'0.95rem',color:'#3498db'}}>{hideFirstChar(game.home_pitcher)}</span>
+            <span style={{fontSize:'0.95rem',color:'#3498db'}}>{getPitcherName(game.home_pitcher)}</span>
           </div>
         </div>
       )}

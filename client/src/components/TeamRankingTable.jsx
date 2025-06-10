@@ -1,10 +1,13 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import '../App.css';
+
 function TeamRankingTable({ rankings }) {
   return (
     <div className="section" style={{marginBottom:0}}>
-      <div className="section-title" style={{marginBottom:12}}>
+      <div className="section-title" style={{marginBottom:12, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
         <h2 style={{fontSize:'1.18rem',margin:0}}>팀 순위</h2>
+        <Link to="/rankings" className="view-all-link">전체보기</Link>
       </div>
       <table className="stats-table" style={{fontSize:'0.98rem'}}>
         <thead>
@@ -13,7 +16,7 @@ function TeamRankingTable({ rankings }) {
           </tr>
         </thead>
         <tbody>
-          {rankings.map(row => (
+          {rankings.slice(0, 5).map(row => (
             <tr key={row.rank}>
               <td>{row.rank}</td>
               <td>{row.team}</td>
@@ -28,4 +31,5 @@ function TeamRankingTable({ rankings }) {
     </div>
   );
 }
+
 export default TeamRankingTable; 

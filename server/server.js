@@ -15,8 +15,7 @@ const io = new Server(server, {
     origin: "*",  // 모든 도메인에서의 접근 허용
     methods: ["GET", "POST"] 
   },
-  logger: false,  // Socket.IO 로그 비활성화
-  transports: ['websocket']  // WebSocket만 사용
+  logger: false  // Socket.IO 로그 비활성화
 });
 
 app.use(cors({
@@ -120,22 +119,12 @@ setInterval(async () => {
       console.log("📡 실시간 전송 완료");
     }
 
-    // 모든 경기가 '종료'되었는지 확인
-    const allGamesEnded = newData.every(game => game.status?.includes('종료'));
-    const today = new Date();
-    const todayDateStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
-
-    // 모든 경기가 종료되었고, 오늘 아직 팀 순위가 업데이트되지 않았다면
-    if (allGamesEnded && lastRankingUpdateDate !== todayDateStr) {
-      console.log("모든 경기가 종료되었습니다. 팀 순위를 업데이트합니다.");
-      const newTeamRankings = await fetchTeamRankingsFromPython();
-      if (JSON.stringify(latestTeamRankings) !== JSON.stringify(newTeamRankings)) {
-        latestTeamRankings = newTeamRankings;
-        // 클라이언트에게 팀 순위 업데이트 알림 (필요시)
-        io.emit("updateTeamRankings", latestTeamRankings);
-        console.log("🏆 팀 순위 실시간 전송 완료");
-      }
-      lastRankingUpdateDate = todayDateStr; // 오늘 업데이트 완료로 표시
+    // 팀 순위 데이터도 함께 업데이트
+    const newTeamRankings = await fetchTeamRankingsFromPython();
+    if (JSON.stringify(latestTeamRankings) !== JSON.stringify(newTeamRankings)) {
+      latestTeamRankings = newTeamRankings;
+      io.emit("updateTeamRankings", latestTeamRankings);
+      console.log("🏆 팀 순위 실시간 전송 완료");
     }
 
   } catch (e) {

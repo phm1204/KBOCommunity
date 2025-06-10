@@ -63,8 +63,10 @@ try:
 
         # 상태 텍스트 추출
         status_tag = game.find("p", class_="status")
+        inning_tag = game.find("p", class_="staus")
         status = status_tag.get_text(strip=True) if status_tag else "-"
-
+        inning = inning_tag.get_text(strip=True) if inning_tag else ""
+        
         # 구장, 시간
         info_items = game.find_all('li')
         stadium = info_items[0].get_text(strip=True) if len(info_items) > 0 else ""
@@ -101,6 +103,7 @@ try:
             "time": time,
             "stadium": stadium,
             "status": status,
+            "staus": inning,
             "away_team": away_team,
             "home_team": home_team,
             "away_score": away_score_text,
