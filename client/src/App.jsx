@@ -7,7 +7,6 @@ import Login from './Login.jsx';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Header from './components/Header';
 import TEAM_COLORS from './utils/teamColors';
 import AuthModal from './components/AuthModal';
 
@@ -42,8 +41,7 @@ function MyPage({ username, myteam, setMyteam, onBack, setUsername, setShowAuthM
     setMyteam('');
     localStorage.removeItem('username');
     localStorage.removeItem('myteam');
-    if (setShowAuthModal) setShowAuthModal(true);
-    onBack();
+    setShowAuthModal(true);
   };
 
   const handleDeleteAccount = async () => {
@@ -54,8 +52,7 @@ function MyPage({ username, myteam, setMyteam, onBack, setUsername, setShowAuthM
       setMyteam('');
       localStorage.removeItem('username');
       localStorage.removeItem('myteam');
-      if (setShowAuthModal) setShowAuthModal(true);
-      onBack();
+      setShowAuthModal(true);
       alert('계정이 삭제되었습니다.');
     } catch (e) {
       alert('계정 삭제 실패');
@@ -130,6 +127,7 @@ function ChatModal({ open, onClose, title, username, socket }) {
 
 function MainApp({ username, setUsername, myteam, setMyteam }) {
   const [games, setGames] = useState([]);
+  const [teamRankings, setTeamRankings] = useState([]);
   const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'http://' + window.location.hostname + ':5000';
   const socket = io(SERVER_URL);
   const [showAuthModal, setShowAuthModal] = useState(!username);
@@ -139,6 +137,8 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
   const [gameFilter, setGameFilter] = useState('전체');
   const [showChat, setShowChat] = useState(false);
   const [chatTitle, setChatTitle] = useState('');
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [openGameCardId, setOpenGameCardId] = useState(null);
 
   const color = TEAM_COLORS[myteam] || '#888';
 
@@ -146,9 +146,18 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
     fetch(`${SERVER_URL}/games`)
       .then(res => res.json())
       .then(data => setGames(data));
+    fetch(`${SERVER_URL}/team-rankings`)
+      .then(res => res.json())
+      .then(data => setTeamRankings(data));
     socket.on("updateGames", (data) => {
       setGames(data);
     });
+    socket.on("updateTeamRankings", (data) => {
+      setTeamRankings(data);
+    });
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const handleLoginSuccess = (user) => {
@@ -167,11 +176,9 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
   const handleJoinChat = (game, roomId) => {
     setChatTitle(`${game.away_team} vs ${game.home_team} (${game.time})`);
     setShowChat(true);
-    // Join the specific chat room
     socket.emit('joinRoom', { username, room: roomId });
   };
 
-  // 필터링된 게임 리스트
   const filteredGames = games.filter(game => {
     if (gameFilter === '전체') return true;
     if (gameFilter === '진행 중') return game.status?.includes('진행');
@@ -192,35 +199,30 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
     }
   ];
 
-  const teamRankings = [
-    { rank: 1, team: 'SSG 랜더스', win: 30, lose: 15, draw: 0, rate: '.667' },
-    { rank: 2, team: 'LG 트윈스', win: 28, lose: 17, draw: 0, rate: '.622' },
-    { rank: 3, team: '키움 히어로즈', win: 26, lose: 19, draw: 0, rate: '.578' },
-    { rank: 4, team: 'KT 위즈', win: 25, lose: 20, draw: 0, rate: '.556' },
-    { rank: 5, team: 'NC 다이노스', win: 24, lose: 21, draw: 0, rate: '.533' },
-  ];
-
-  // 탭별 섹션 렌더링
   const renderTabContent = () => {
     if (activeTab === 'home') {
-  return (
+      return (
         <div className="main-2col">
           <div className="main-2col-left">
-            <div className="filter-tabs">
-              {['전체','진행 중','예정','종료'].map(f => (
-                <button
-                  key={f}
-                  className={`filter-tab-btn${gameFilter === f ? ' active' : ''}`}
-                  onClick={() => setGameFilter(f)}
-                  style={gameFilter === f ? { background: color, color: '#fff', fontWeight: 700 } : {}}
-                >{f}</button>
-              ))}
-            </div>
-    <div>
-              {filteredGames.length === 0 ? (
+            <div>
+              {games.length === 0 ? (
                 <p>경기 데이터가 없습니다.</p>
               ) : (
-                filteredGames.map((game, i) => <GameCard key={i} game={game} onJoinChat={handleJoinChat} />)
+                games.map((game, i) => {
+                  const gameId = `${game.time}-${game.away_team}-${game.home_team}`;
+                  return (
+                    <div key={i} style={{ marginBottom: '16px' }}>
+                      <GameCard 
+                        game={game} 
+                        onJoinChat={handleJoinChat}
+                        showLineup={true}
+                        id={gameId}
+                        isOpen={openGameCardId === gameId}
+                        setOpenGameCardId={setOpenGameCardId}
+                      />
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
@@ -256,21 +258,10 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
     if (activeTab === 'community') {
       return (
         <div style={{width:'100%',maxWidth:800,margin:'0 auto'}}>
-          <div className="filter-tabs" style={{marginBottom:24}}>
-            {['전체','진행 중','예정','종료'].map(f => (
-              <button
-                key={f}
-                className={`filter-tab-btn${gameFilter === f ? ' active' : ''}`}
-                onClick={() => setGameFilter(f)}
-                style={gameFilter === f ? { background: color, color: '#fff', fontWeight: 700 } : {}}
-              >{f}</button>
-            ))}
-          </div>
           <CommunityCard room={communityRooms[0]} onJoin={()=>handleJoinChat(communityRooms[0], 'community')} />
         </div>
       );
     }
-    // TODO: batter, pitcher, team, community 탭별 내용 추가
     return (
       <section className="section">
         <div className="section-title">
@@ -285,10 +276,9 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
     return (
       <div style={{ position: 'relative', minHeight: '100vh', background: '#f4f4f9' }}>
         <AuthModal 
-          show={showAuthModal} 
           onClose={() => setShowAuthModal(false)}
           onLoginSuccess={handleLoginSuccess}
-          activeTab={authTab}
+          initialTab={authTab}
           onTabChange={setAuthTab}
         />
       </div>
@@ -297,14 +287,83 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
 
   return (
     <div className="app-container">
-      <Header
-        username={username}
-        myteam={myteam}
-        onMyPageClick={() => setShowMyPage(true)}
-        onTabChange={setActiveTab}
-        activeTab={activeTab}
-        color={color}
-      />
+      <header className="main-header">
+        <div className="header-content">
+          <a href="/" className="site-title">KBO Community</a>
+          <div style={{ position: 'relative' }}>
+            <button 
+              className="profile-button"
+              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+            >
+              {username[0].toUpperCase()}
+            </button>
+            {showProfileDropdown && (
+              <div className="profile-dropdown" style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                background: '#fff',
+                borderRadius: '12px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                padding: '8px',
+                minWidth: '180px',
+                marginTop: '12px',
+                zIndex: 1000
+              }}>
+                <button 
+                  onClick={() => {
+                    setShowMyPage(true);
+                    setShowProfileDropdown(false);
+                  }}
+                  style={{
+                    padding: '10px 16px',
+                    border: 'none',
+                    background: 'none',
+                    textAlign: 'left',
+                    fontSize: '1rem',
+                    color: '#333',
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    width: '100%',
+                    transition: 'background 0.2s'
+                  }}
+                >
+                  내 정보 관리
+                </button>
+                <button 
+                  onClick={() => {
+                    handleLogout();
+                    setShowProfileDropdown(false);
+                  }}
+                  style={{
+                    padding: '10px 16px',
+                    border: 'none',
+                    background: 'none',
+                    textAlign: 'left',
+                    fontSize: '1rem',
+                    color: '#e74c3c',
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    width: '100%',
+                    transition: 'background 0.2s'
+                  }}
+                >
+                  로그아웃
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          onLoginSuccess={handleLoginSuccess}
+          initialTab={authTab}
+          onTabChange={setAuthTab}
+        />
+      )}
       {showMyPage ? (
         <MyPage
           username={username}
@@ -315,16 +374,9 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
           setShowAuthModal={setShowAuthModal}
         />
       ) : (
-        renderTabContent()
-      )}
-      {showAuthModal && (
-        <AuthModal
-          open={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          onLoginSuccess={handleLoginSuccess}
-          activeTab={authTab}
-          onTabChange={setAuthTab}
-        />
+        <div className="main-content-container">
+          {renderTabContent()}
+        </div>
       )}
       {showChat && (
         <ChatModal
@@ -340,25 +392,17 @@ function MainApp({ username, setUsername, myteam, setMyteam }) {
 }
 
 export default function App() {
-  const [username, setUsername] = useState(() => localStorage.getItem('username') || '');
-  const [myteam, setMyteam] = useState(() => localStorage.getItem('myteam') || '');
-
-  // 로그인/팀 변경 시 localStorage에 저장
-  useEffect(() => {
-    if (username) localStorage.setItem('username', username);
-    else localStorage.removeItem('username');
-  }, [username]);
-  useEffect(() => {
-    if (myteam) localStorage.setItem('myteam', myteam);
-    else localStorage.removeItem('myteam');
-  }, [myteam]);
+  const [username, setUsername] = useState(localStorage.getItem('username') || '');
+  const [myteam, setMyteam] = useState(localStorage.getItem('myteam') || '');
 
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<MainApp username={username} setUsername={setUsername} myteam={myteam} setMyteam={setMyteam} />} />
-        <Route path="/mypage" element={<MyPage username={username} myteam={myteam} setMyteam={setMyteam} />} />
-      </Routes>
+      <MainApp
+        username={username}
+        setUsername={setUsername}
+        myteam={myteam}
+        setMyteam={setMyteam}
+      />
     </Router>
   );
 }

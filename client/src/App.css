@@ -15,12 +15,6 @@ body {
     background-color: #f5f5f5;
     color: #333;
 }
-header {
-    background-color: var(--primary);
-    color: white;
-    padding: 1rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -183,26 +177,6 @@ nav, .main-nav, .nav-list, .nav-item, .nav-item.active, .nav-item:hover {
     border-radius: 0 4px 4px 0;
     cursor: pointer;
 }
-.filter-bar {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-}
-.filter-btn {
-    padding: 0.5rem 1rem;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-.filter-btn.active {
-    background-color: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
 .countdown {
     font-size: 0.9rem;
     color: var(--primary);
@@ -337,28 +311,6 @@ nav, .main-nav, .nav-list, .nav-item, .nav-item.active, .nav-item:hover {
         min-width: 0;
     }
 }
-.filter-tabs {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
-    padding: 0 4px;
-}
-.filter-tab-btn {
-    padding: 10px 28px;
-    border: none;
-    border-radius: 22px;
-    background: #f5f5f5;
-    color: #888;
-    font-size: 1.08rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-}
-.filter-tab-btn.active {
-    background: #7b7b7b;
-    color: #fff;
-    font-weight: bold;
-}
 .badge {
     padding: 4px 12px;
     border-radius: 12px;
@@ -408,11 +360,12 @@ nav, .main-nav, .nav-list, .nav-item, .nav-item.active, .nav-item:hover {
 }
 .main-content-container {
     max-width: 1200px;
-    margin: 38px auto 0 auto;
-    padding: 0 12px;
+    margin: 80px auto 0 auto;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: calc(100vh - 64px);
 }
 .community-meta {
     font-size: 0.98rem;
@@ -441,81 +394,13 @@ nav, .main-nav, .nav-list, .nav-item, .nav-item.active, .nav-item:hover {
 .btn-community:hover {
     background: #c0392b;
 }
-.main-header {
-    width: 100%;
-    background: transparent;
-    box-shadow: none;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 32px;
-    padding: 0;
-}
-.header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    padding: 0 32px;
-}
-.header-title {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #fff;
-}
-.header-nav {
-    display: flex;
-    gap: 24px;
-    flex: 1 1 0;
-    justify-content: center;
-    box-shadow: none !important;
-    background: none !important;
-    border: none !important;
-}
-.header-nav-btn {
-    background: none;
-    border: none;
-    color: #bbb;
-    font-size: 1.08rem;
-    font-weight: 500;
-    padding: 10px 18px;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    box-shadow: none !important;
-}
-.header-nav-btn.active {
-    background: #fff;
-}
-.header-nav-btn:hover {
-    background: #444;
-    color: #fff;
-}
-.header-actions {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.header-btn, .mypage-btn {
-    color: #fff;
-    border: none;
-    border-radius: 16px;
-    padding: 8px 22px;
-    font-size: 1.02rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.header-btn:hover, .mypage-btn:hover {
-    background: #888;
-}
 .main-2col {
     display: flex;
     gap: 32px;
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    flex: 1;
 }
 .main-2col-left {
     flex: 6.5;
@@ -542,4 +427,239 @@ nav, .main-nav, .nav-list, .nav-item, .nav-item.active, .nav-item:hover {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+}
+.app-container {
+    min-height: 100vh;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+}
+
+.header-content {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.site-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #333;
+    text-decoration: none;
+}
+
+.profile-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #eee;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profile-button:hover {
+    border-color: #ddd;
+    background: #f8f9fa;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    padding: 8px;
+    min-width: 180px;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.profile-dropdown button {
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.profile-dropdown button:hover {
+    background: #f5f5f5;
+}
+
+.main-content-container {
+    margin-top: 64px;
+    padding: 24px;
+}
+
+.no-games-container {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    padding: 48px 24px;
+    text-align: center;
+    margin: 24px 0;
+}
+
+.no-games-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: #e74c3c;
+}
+
+.no-games-container h3 {
+    font-size: 1.25rem;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.no-games-container p {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+}
+
+/* MyPage Styles */
+/* This is a test comment to force CSS reload */
+.mypage-layout {
+  display: flex;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.mypage-sidebar {
+  flex: 0 0 240px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  padding: 24px 0;
+}
+
+.mypage-sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mypage-sidebar-nav li a {
+  display: block;
+  padding: 12px 24px;
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.mypage-sidebar-nav li a:hover {
+  background-color: #f0f0f0;
+}
+
+.mypage-sidebar-nav li a.active {
+  background-color: #e0f2f7;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.mypage-content {
+  flex: 1;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  padding: 24px;
+}
+
+.mypage-section-title {
+  font-size: 1.5rem;
+  margin-bottom: 24px;
+  color: var(--dark);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+.mypage-card {
+  background-color: #fdfdfd;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  padding: 24px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.mypage-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: #e0f7fa; /* Light cyan */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 20px;
+  overflow: hidden;
+}
+
+.mypage-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mypage-email {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mypage-email .check-icon {
+  color: #28a745;
+  margin-left: 8px;
+  font-size: 1.2em;
+}
+
+.mypage-btn-modify {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+}
+
+.mypage-btn-modify:hover {
+  background-color: #0056b3;
 } 

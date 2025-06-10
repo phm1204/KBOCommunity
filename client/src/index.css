@@ -81,3 +81,30 @@ p {
   background-color: #4a4a4a;
 }
 
+/* 경기 없음 UI */
+.no-games-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  padding: 48px 24px;
+  text-align: center;
+  margin: 24px 0;
+}
+
+.no-games-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #e74c3c;
+}
+
+.no-games-container h3 {
+  font-size: 1.25rem;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.no-games-container p {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+}
+

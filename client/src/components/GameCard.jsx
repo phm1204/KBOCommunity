@@ -1,5 +1,6 @@
 // GameCard.js
 import React, { useState } from 'react';
+import TEAM_COLORS from '../utils/teamColors';
 
 const TEAM_INITIALS = {
   '두산': '두산', 'LG': 'LG', 'SSG': 'SSG', 'NC': 'NC', '키움': '키움', 'KIA': 'KT', '롯데': '롯데', '삼성': '삼성', '한화': '한화', 'KT': 'KT'
@@ -37,27 +38,25 @@ const getButton = (game, onJoinChat) => {
     return <button className="btn btn-primary" onClick={() => onJoinChat && onJoinChat(game, roomId)}>LIVE 커뮤니티</button>;
   }
   if (game.status?.includes('예정') || game.status?.includes('대기')) {
-    return <button className="btn btn-scheduled" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티 입장</button>;
+    return <button className="btn btn-scheduled" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티</button>;
   }
   if (game.status?.includes('종료')) {
-    return <button className="btn btn-ended" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티 입장</button>;
+    return <button className="btn btn-ended" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티</button>;
   }
-  return <button className="btn btn-scheduled" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티 입장</button>;
+  return <button className="btn btn-scheduled" onClick={() => onJoinChat && onJoinChat(game, roomId)}>커뮤니티</button>;
 };
 
 // 경기 카드 컴포넌트
-const GameCard = ({ game, onJoinChat }) => {
-  const [open, setOpen] = useState(false);
-  const status = getGameStatus(game);
+const GameCard = ({ game, onJoinChat, showLineup = true, id, isOpen, setOpenGameCardId }) => {
+
+  const handleClick = () => {
+    if (showLineup) {
+      setOpenGameCardId(isOpen ? null : id);
+    }
+  };
 
   // 선발투수 이름 첫 글자 제거 함수
   const hideFirstChar = (name) => (name && name.length > 1 ? name.slice(1) : name || '-');
-
-  let statusClass = '';
-  if (status === "예정") statusClass = "badge-scheduled";
-  if (status === "진행 중") statusClass = "badge-live";
-  if (status === "종료됨") statusClass = "badge-ended";
-  if (status === "취소") statusClass = "badge-canceled";
 
   return (
     <div style={{
@@ -68,45 +67,67 @@ const GameCard = ({ game, onJoinChat }) => {
       overflow: 'hidden',
       padding: 0
     }}>
-      <div className="game-card" onClick={() => setOpen(o => !o)} style={{
-        cursor: 'pointer',
+      <div className="game-card" onClick={handleClick} style={{
+        cursor: showLineup ? 'pointer' : 'default',
         borderRadius: 0,
         boxShadow: 'none',
         margin: 0,
         background: '#fff',
-        padding: '22px 28px',
+        padding: '20px 28px',
         display: 'flex',
         alignItems: 'center',
         gap: 18
       }}>
-        <div className="team-info">
-          <div className="team-logo">{TEAM_INITIALS[game.away_team] || game.away_team}</div>
-          <div>{game.away_team_full || game.away_team}</div>
+        <div className="team-info away-team" style={{ color: TEAM_COLORS[game.away_team], fontSize: '1.05rem', minWidth: '60px', textAlign: 'right' }}>
+          {game.away_team}
         </div>
-        <div style={{flex:1, textAlign:'center'}}>
-          <div className="game-time">{game.time} | {game.stadium}</div>
-          <div className="game-status-text" style={{color:'#e74c3c', fontWeight:500}}>{game.status_detail || game.status}</div>
+        <div className="team-logo" style={{ 
+          backgroundColor: TEAM_COLORS[game.away_team] || '#f3f3f3',
+          color: '#fff',
+          fontWeight: '700',
+          width: '42px',
+          height: '42px',
+          fontSize: '1.15rem',
+          marginRight: '10px' // 팀 이름과 로고 사이 간격 조정
+        }}>
+          {game.away_team[0]}
         </div>
-        <div className="team-info">
-          <div>{game.home_team_full || game.home_team}</div>
-          <div className="team-logo">{TEAM_INITIALS[game.home_team] || game.home_team}</div>
+        <div style={{flex:1, textAlign:'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: '0 10px'}}>
+          <div className="game-time" style={{ fontSize: '1rem', marginBottom: '4px' }}>{game.time} | {game.stadium}</div>
+          <div className="game-score" style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#333' }}>
+            {game.away_score !== 'N/A' ? `${game.away_score} : ${game.home_score}` : '-'}
+          </div>
+        </div>
+        <div className="team-logo" style={{ 
+          backgroundColor: TEAM_COLORS[game.home_team] || '#f3f3f3',
+          color: '#fff',
+          fontWeight: '700',
+          width: '42px',
+          height: '42px',
+          fontSize: '1.15rem',
+          marginLeft: '10px' // 팀 이름과 로고 사이 간격 조정
+        }}>
+          {game.home_team[0]}
+        </div>
+        <div className="team-info home-team" style={{ color: TEAM_COLORS[game.home_team], fontSize: '1.05rem', minWidth: '60px', textAlign: 'left' }}>
+          {game.home_team}
         </div>
         <div style={{marginLeft:16}} onClick={e => e.stopPropagation()}>
           {getButton(game, onJoinChat)}
         </div>
       </div>
-      {open && (
+      {isOpen && showLineup && (
         <div style={{
           background:'#fff',
           borderRadius: 0,
           margin: 0,
-          padding:'18px 28px 12px 28px',
+          padding:'14px 28px 10px 28px',
           borderTop: 'none',
           display:'flex',
           justifyContent:'space-between',
           alignItems:'flex-start',
           width:'100%',
-          fontSize:'1rem',
+          fontSize:'0.95rem',
           fontWeight:500
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingLeft: '86px', flex: 1 }}>
